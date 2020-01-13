@@ -2,24 +2,40 @@ import React from 'react';
 import styled from 'styled-components';
 
 const MainDiv = styled.div`
+  position: relative;
   min-width: 500px;
   max-width: 800px;
   margin: auto;
 `;
 
+const ReadyH3 = styled.h3`
+  width:70%;
+  margin: auto;
+`;
+
 const TestContentDiv = styled.div`
-  font-family: Montserrat;
+  margin: auto;
+  width: 70%;
+  height: 300px;
+  overflow-y: hidden;
 `;
 
 const InputContentDiv = styled.div`
-  font-family: Montserrat;
+  margin: auto;
+  height: 100px;
+  width: 70%;
+  overflow-y: hidden;
 `;
 
-const Highlight = styled.span`
+const WordSpan = styled.span`
+  font-family: 'Montserrat';
+`;
+
+const Highlight = styled(WordSpan)`
   color: blue;
 `;
 
-const WrongWord = styled.span`
+const WrongWord = styled(WordSpan)`
   color: red;
 `;
 
@@ -43,10 +59,24 @@ class App extends React.Component {
     this.playArea.current.focus();
     if (this.state.challenged) {
       // make an api call here to retrieve the paragraph used by the challenger
-      
+
     } else {
       // make an api call here for the server to generate a fake sentence to be typed
-
+      fetch('/api/newparagraph', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html'
+        }
+      }).then((result) => {
+        return result.text();
+      }).then((text) => {
+        const textArray = text.split(' ');
+        this.setState({
+          textArray: textArray
+        })
+      }).catch((err) => {
+        console.log('error while fetching for new paragraph... ', err);
+      });
     }
   }
 
@@ -79,17 +109,17 @@ class App extends React.Component {
       lastElement = lastElement.substring(0, lastElement.length - 1);
       if (lastElement.length) {
         inputArray.push(lastElement);
-        options.currentIndex = currentIndex === textArray.length ? currentIndex - 1 : currentIndex;
+        options.currentIndex = newWord && currentIndex > 0 ? currentIndex - 1 : currentIndex;
         options.newWord = false;
       } else {
-        options.currentIndex = currentIndex === 0 ? 0 : currentIndex - 1;
+        options.currentIndex = currentIndex === 0 ? 0 : currentIndex;
         options.newWord = true;
       }
       options.inputArray = inputArray; 
       this.setState(options);
     } else if (event.key === 'Shift') {
       return;
-    } else if (event.key.match(/^[a-z0-9]+$/i) && event.key.length === 1) {
+    } else if (event.key.match(/^[a-z0-9\,\.]+$/i) && event.key.length === 1 && currentIndex < textArray.length) {
       let lastElement = !newWord ? inputArray.pop() : '';
       lastElement += event.key;
       inputArray.push(lastElement);
@@ -103,24 +133,26 @@ class App extends React.Component {
 
 
   render() {
-    const { textArray, inputArray, currentIndex, incorrectIndices } = this.state;
+    const { textArray, inputArray, currentIndex, incorrectIndices, newWord } = this.state;
     return (
       <MainDiv>
+        <h1>{currentIndex}</h1>
+        <h1>{newWord ? 'new word' : 'not new word'}</h1>
         <TestContentDiv>
           {
             textArray.map((text, index) => {
               return (
-              currentIndex === index ? <Highlight key={index}>{text} </Highlight> : <span key={index}>{text} </span> 
+              currentIndex === index ? <Highlight key={index}>{text} </Highlight> : <WordSpan key={index}>{text} </WordSpan> 
               );
             })
           }
         </TestContentDiv>
+        <ReadyH3>Begin typing when you are ready...</ReadyH3>
         <InputContentDiv onKeyDown={ (event) => { this.handleKeyPressed(event) } } ref={this.playArea} tabIndex='0'>
-          <h1>ARE YOU READY?</h1>
           <div>
             {
               inputArray.map((word, index) => (
-                incorrectIndices.has(index) ? <WrongWord key={index}>{word} </WrongWord> : <span key={index}>{word} </span>
+                incorrectIndices.has(index) ? <WrongWord key={index}>{word} </WrongWord> : <WordSpan key={index}>{word} </WordSpan>
               ))
             }
           </div>

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = require('express').Router();
-const db = require('../database');
+const request = require('request');
+const controller = require('./controller');
 
 // ============ create routes ============
 // register new user
@@ -13,6 +14,11 @@ router.post('/api/newbattle', (req, res) => {
   const battleInfo = req.body; 
 });
 
+// create new paragraphs to be used
+router.get('/api/newparagraph', (req, res) => {
+  const newParagraph = controller.generateNewParagraph();
+  res.status(200).send(newParagraph);
+});
 
 // ============ read routes ============
 // get specified user
@@ -37,3 +43,5 @@ router.get('/api/getsampletext', (req, res) => {
 router.put('/api/updatewpm', (req, res) => {
 
 });
+
+module.exports = router;
