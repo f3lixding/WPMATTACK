@@ -16,7 +16,7 @@
     "@babel/preset-react": "^7.7.4",
     "babel-loader": "^8.0.6",
     "cors": "^2.8.5",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "lorem-ipsum": "^2.0.3",
     "mongoose": "^5.8.7",
     "nodemon": "^2.0.2",
